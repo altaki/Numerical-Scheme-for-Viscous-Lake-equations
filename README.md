@@ -23,11 +23,11 @@ $$
  b(x) = \operatorname{dist}(x,\partial\Omega)^{\alpha},\qquad \alpha>0.
 $$
 The weighted viscous system (common 2D form) writes
-\[
-\partial_t( b\,u ) + \nabla\cdot( b\,u\otimes u )
+
+$$\partial_t( b\,u ) + \nabla\cdot( b\,u\otimes u )
 - 2\mu\,\nabla\cdot\Big( b\big(D(u)+ (\nabla\cdot u)I\big) \Big)
-+ b\,\nabla p = 0,\qquad \nabla\cdot(b\,u)=0,
-\]
++ b\,\nabla p = 0,\qquad \nabla\cdot(b\,u)=0,$$
++ 
 where \( D(u)=\tfrac12(\nabla u+\nabla u^T) \). In the limit \( \mu\to0 \) we recover the inviscid model (“lake/Euler anelastic”), studied in [AT‑L2023] and [JNW2012].
 
 ### Boundary Conditions (Navier)
