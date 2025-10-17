@@ -19,9 +19,9 @@ https://iopscience.iop.org/article/10.1088/0951-7715/25/3/641/pdf
 ## 1) Continuous Model (recap)
 
 Let \( \Omega\subset\mathbb{R}^2 \) be bounded, and a bathymetry \( b(x)\ge0 \) (e.g., **Muckenhoupt-type weight**) that vanishes at the boundary: typically
-\[
+$$
  b(x) = \operatorname{dist}(x,\partial\Omega)^{\alpha},\qquad \alpha>0.
-\]
+$$
 The weighted viscous system (common 2D form) writes
 \[
 \partial_t( b\,u ) + \nabla\cdot( b\,u\otimes u )
