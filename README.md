@@ -31,7 +31,7 @@ The weighted viscous system (common 2D form) writes
 where \( D(u)=\tfrac12(\nabla u+\nabla u^T) \). In the limit \( \mu\to0 \) we recover the inviscid model (“lake/Euler anelastic”), studied in [AT‑L2023] and [JNW2012].
 
 ### Boundary Conditions (Navier)
-On \( \partial\Omega \):
+On \($ \partial\Omega $\):
 - **Impermeability**: \( (b\,u)\cdot n = 0 \).
 - **Navier slip**: \( 2b\,(D(u)\,n)\cdot\tau + \eta\,b\,(u\cdot\tau)=0 \) (\( \eta\ge0 \)).
 
