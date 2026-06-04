@@ -229,5 +229,5 @@ This is a prototype implementation. It is not a boundary-fitted FEM/FVM solver a
 
 ---
 
-## 1. Mathematical setting
+
 
