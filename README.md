@@ -152,7 +152,7 @@ The numerical error is measured in the weighted velocity norm
 
 $$
 \lVert u_\mu-u\rVert _{L^2_b}
-= .\left(\int_\Omega b |u_\mu-u|^2\,dx\right)^{1/2}.
+= \left(\int_\Omega b |u_\mu-u|^2\,dx\right)^{1/2}.
 $$
 
 On the masked grid this is approximated by
