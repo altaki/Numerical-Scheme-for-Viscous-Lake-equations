@@ -1,6 +1,6 @@
 # Numerical Scheme for Viscous Lake Equations
 
-This repository contains a **masked Cartesian prototype diskThis repository contains a **masked Cartesian prototype** for the numerical study of degenerate lake equations and a qualitative investigation of the vanishing-viscosity limit.
+This repository contains a **masked Cartesian prototype** for the numerical study of degenerate lake equations and a qualitative investigation of the vanishing-viscosity limit.
 
 $$
 \Omega = \{(x,y)\in\mathbb{R}^2 : x^2+y^2<1\}.
