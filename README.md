@@ -151,18 +151,14 @@ The vanishing-viscosity comparison is performed only at the velocity level.
 The numerical error is measured in the weighted velocity norm
 
 $$
-\|u_\mu-u\|_{L^2_b}
-=
-\left(
-\int_\Omega b |u_\mu-u|^2\,dx
-\right)^{1/2}.
+\lVert u_\mu-u\rVert _{L^2_b}
+= .\left(\int_\Omega b |u_\mu-u|^2\,dx\right)^{1/2}.
 $$
 
 On the masked grid this is approximated by
 
 $$
-\|u_\mu-u\|_{L^2_b}
-=
+\lVert u_\mu-u\rVert _{L^2_b}=
 \left(
 \sum_{\Omega_h} b_{ij}|u_{\mu,ij}-u_{ij}|^2\,dx\,dy
 \right)^{1/2}.
