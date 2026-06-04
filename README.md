@@ -3,7 +3,7 @@
 This repository contains a **masked Cartesian prototype** for the numerical study of degenerate lake equations and a qualitative investigation of the vanishing-viscosity limit.
 
 $$
-\Omega = \{(x,y)\in\mathbb{R}^2 : x^2+y^2<1\}.
+\Omega = \lbrace{ (x,y)\in\mathbb{R}^2 : x^2+y^2<1 \rbrace}.
 $$
 
 It is approximated numerically by a masked Cartesian grid on the square
@@ -39,7 +39,7 @@ Thus \(b\to0\) at the shore.
 The default configuration uses
 
 $$
-0<\alpha<\frac12,
+0<\alpha<\frac 12,
 $$
 
 which is the degenerate regime considered in the motivating mathematical framework.
@@ -57,7 +57,7 @@ $$
 The velocity is reconstructed from a stream function \(\psi\) through the singular elliptic problem
 
 $$
-\operatorname{div}\left(\frac1b\nabla\psi\right)=b\omega.
+\mathrm{div}\left(\frac1b\nabla\psi\right)=b\omega.
 $$
 
 The velocity is then recovered by
@@ -75,13 +75,13 @@ $$
 and
 
 $$
-\operatorname{curl}u=\partial_xu_y-\partial_yu_x.
+\mathrm{curl}u=\partial_xu_y-\partial_yu_x.
 $$
 
 Therefore,
 
 $$
-\omega=\frac{\operatorname{curl}u}{b}.
+\omega=\frac{\mathrm{curl}u}{b}.
 $$
 
 The sparse elliptic reconstruction solves the SPD system
@@ -93,7 +93,7 @@ $$
 where
 
 $$
-A_{\rm sing}=-\operatorname{div}\left(\frac1b\nabla\right).
+A_{\rm sing}=-\mathrm{div}\left(\frac1b\nabla\right).
 $$
 
 The singular elliptic operator is implemented in `lake/elliptic.py`.
@@ -108,15 +108,15 @@ The continuous model motivating the prototype is
 
 $$
 \partial_t(bu_\mu)
-+\operatorname{div}(bu_\mu\otimes u_\mu)
--2\mu\operatorname{div}\left(bD(u_\mu)+b\operatorname{div}(u_\mu)I\right)
++\mathrm{div}(bu_\mu\otimes u_\mu)
+-2\mu\mathrm{div}\left(bD(u_\mu)+b\mathrm{div}(u_\mu)I\right)
 +b\nabla p_\mu=0,
 $$
 
 with
 
 $$
-\operatorname{div}(bu_\mu)=0.
+\mathrm{div}(bu_\mu)=0.
 $$
 
 The symmetric gradient is
@@ -134,7 +134,7 @@ $$
 and
 
 $$
-2b\left(D(u_\mu)\cdot n+\operatorname{div}(u_\mu)n\right)\cdot\tau
+2b\left(D(u_\mu)\cdot n+\mathrm{div}(u_\mu)n\right)\cdot\tau
 +\eta_\mu b(u_\mu\cdot\tau)=0.
 $$
 
