@@ -1,116 +1,237 @@
-# Degenerate Viscous Lake Equations — Numerical Discretization
+# Numerical Scheme for Viscous Lake Equations
 
-This document describes **the continuous model**, **the choices of discretization** (space/time), and **the weighted projection** used to enforce the constraint \( \nabla\cdot(b\,u)=0 \) within the context of **viscous lake equations** with degenerate bathymetry \( b\ge0 \) that vanishes at the boundary.
+This repository contains a **masked Cartesian prototype diskThis repository contains a **masked Cartesian prototype** for the numerical study of degenerate lake equations and a qualitative investigation of the vanishing-viscosity limit.
 
-The main references are:
-
-- Al Taki (2017), *Viscosity effect on the degenerate lake equations*, **Nonlinear Analysis** 148, 30–60 — existence/uniqueness in weighted spaces and power-type weights. [doi:10.1016/j.na.2016.09.017][AT2017]
-- Al Taki & Lacave (2023), *Degenerate lake equations: classical solutions and vanishing viscosity limit*, **Nonlinearity** 36, 653–678 — classical solutions of the degenerate inviscid model and **limit \( \nu\to0 \)** in the Navier case. [doi:10.1088/1361-6544/aca865][AT-L2023]
-- Jiu, Niu, Wu (2012), *Vanishing viscosity limits for the degenerate lake equations with Navier boundary conditions*, **Nonlinearity** 25, 641–655 — Navier framework and inviscid limit. [PDF IOP][JNW2012]
-
-https://doi.org/10.1016/j.na.2016.09.017  
-[AT-L2023]: https://doi.org/10.1088/1361-6544/aca865  
-https://iopscience.iop.org/article/10.1088/0951-7715/25/3/641/pdf
-
-> **Note** — The numerical setup below follows the spirit of weak forms and weighted constraints used in the literature (conservative discretization and weighted projection). For more analytical and physical details on Navier, see also Iftimie–Sueur (2010) and Wang–Wang–Xin (2010).
-
----
-
-## 1) Continuous Model (recap)
-
-Let \( \Omega\subset\mathbb{R}^2 \) be bounded, and a bathymetry \( b(x)\ge0 \) (e.g., **Muckenhoupt-type weight**) that vanishes at the boundary: typically
 $$
- b(x) = \operatorname{dist}(x,\partial\Omega)^{\alpha},\qquad \alpha>0.
+\Omega = \{(x,y)\in\mathbb{R}^2 : x^2+y^2<1\}.
 $$
-The weighted viscous system (common 2D form) writes
 
-$$\partial_t( b\,u ) + \nabla\cdot( b\,u\otimes u )
-- 2\mu\,\nabla\cdot\Big( b\big(D(u)+ (\nabla\cdot u)I\big) \Big)
-+ b\,\nabla p = 0,\qquad \nabla\cdot(b\,u)=0,$$
-+ 
-where \( D(u)=\tfrac12(\nabla u+\nabla u^T) \). In the limit \( \mu\to0 \) we recover the inviscid model (“lake/Euler anelastic”), studied in [AT‑L2023] and [JNW2012].
+It is approximated numerically by a masked Cartesian grid on the square
 
-### Boundary Conditions (Navier)
-On \($ \partial\Omega $\):
-- **Impermeability**: \( (b\,u)\cdot n = 0 \).
-- **Navier slip**: \( 2b\,(D(u)\,n)\cdot\tau + \eta\,b\,(u\cdot\tau)=0 \) (\( \eta\ge0 \)).
+$$
+[-1,1]^2.
+$$
 
-These conditions avoid Dirichlet-type boundary layers and are standard for justifying the **limit \( \mu\to0 \)** (see [JNW2012], [AT‑L2023]).
+The bathymetry is
 
----
+$$
+b(x,y) = (1-r^2)^\alpha,
+\qquad
+r=\sqrt{x^2+y^2},
+\qquad
+\alpha=0.4.
+$$
 
-## 2) Discretization (Cartesian grid, conservative form + weighted projection)
+Near the boundary,
 
-### 2.1 Grid and Indexing
-- Domain \( [0,L_x]\times[0,L_y] \), mesh \( n_x\times n_y \).
-- **Cell-centered variables**: \( u=(u_x,u_y),\ b,\ p \) tabulated on indices \( (i,j) \) with \( i=0..n_x-1 \) for **x** and \( j=0..n_y-1 \) for **y** (i.e. `indexing='ij'`).
-- **Face weights** (arithmetic mean):  
-  \( b_{i+\frac12,j}=\tfrac12(b_{i+1,j}+b_{i,j}) \),  
-  \( b_{i,j+\frac12}=\tfrac12(b_{i,j+1}+b_{i,j}) \).
+$$
+1-r^2=(1-r)(1+r)\sim 2\,\mathrm{dist}(x,\partial\Omega),
+$$
 
-### 2.2 Time Scheme (Fractional Step)
-Let \( \Delta t \) be the time step. One step \( n\to n+1 \):
+so
 
-1. **Explicit Advection (conservative weighted form)**. For each component \( u_k \):
-   \[
-     u_k^{\*} = u_k^n - \Delta t\,\frac{1}{b}\,\nabla\cdot\big( b\,u^n\, u_k^n\big)
-                 + \Delta t\,\text{Diff}(u_k^n).
-   \]
-   **Fluxes** at faces are **upwinded**:  
-   \( F^{x}_{i+\frac12,j}=b_{i+\frac12,j}\,(u_x)_{i+\frac12,j}\,(u_k)^{\text{up}}_{i+\frac12,j} \),  
-   \( F^{y}_{i,j+\frac12}=b_{i,j+\frac12}\,(u_y)_{i,j+\frac12}\,(u_k)^{\text{up}}_{i,j+\frac12} \),  
-   and \( \nabla\cdot(\cdot) \) is **flux divergence** (conservative finite differences).
+$$
+b(x,y)\sim \mathrm{dist}(x,\partial\Omega)^\alpha.
+$$
 
-2. **Weighted Projection** (enforce \( \nabla\cdot(b u^{n+1})=0 \)). Solve
-   \[
-     \nabla\cdot(b\,\nabla\phi) = \frac{1}{\Delta t}\,\nabla\cdot(b\,u^{\*}),
-     \qquad \text{Neumann BC: } \partial_n\phi=0.
-   \]
-   Then **correct without \( b \) factor**:  
-   \( u^{n+1} = u^{\*} - \nabla\phi \) and set \( p^{n+1}=\phi \) (up to a factor).
+Thus \(b\to0\) at the shore.
 
-3. **Boundary Conditions**. Default:
-   - **Normal**: \( u\cdot n=0 \) (if \( b>0 \) at the boundary; otherwise trivially satisfied if \( b=0 \)).
-   - **Tangential**: **free-Navier** version \( (\eta=0) \) via \( \partial_n(u\cdot\tau)=0 \).
-     Robin \( (\eta>0) \) is implemented in ghost cells:  
-     \( 2b(D(u)n)\cdot\tau + \eta b(u\cdot\tau)=0 \).
+The default configuration uses
 
-> **Why this projection?** It is the Euler-Lagrange of  
-> \( \min_v \tfrac12\int b|v-u^{\*}|^2 \) s.t. \( \nabla\cdot(b v)=0 \),  
-> hence \( u^{n+1}=u^{\*}-\nabla\phi \) and the weighted elliptic above (see [JNW2012]).
+$$
+0<\alpha<\frac12,
+$$
 
-### 2.3 Diffusion (two variants)
-- **Simple variant (per component)**: \( \text{Diff}(u)=\nu\,\frac{1}{b}\,\nabla\cdot(b\,\nabla u) \).
-  5-point discretization **with variable coefficients**:
-  \[
-  (\nabla\cdot(b\,\nabla u))_{i,j} \approx \frac{b_{i+\frac12,j}(u_{i+1,j}-u_{i,j})-b_{i-\frac12,j}(u_{i,j}-u_{i-1,j})}{\Delta x^2}
-   + \frac{b_{i,j+\frac12}(u_{i,j+1}-u_{i,j})-b_{i,j-\frac12}(u_{i,j}-u_{i,j-1})}{\Delta y^2}.
-  \]
-- **“Tensorial” variant**:  
-  \( -2\mu\,\nabla\cdot( b(D(u)+(\nabla\cdot u)I)) \). Requires assembling a vector operator (mix of cross derivatives); preferable in **FEM**.
-
-> **Important** — Avoid `np.roll` (implicit periodic conditions) if one wants to enforce Navier.
+which is the degenerate regime considered in the motivating mathematical framework.
 
 ---
 
-## 3) Stability & Practical Remarks
-- **CFL** advection: \( \Delta t \lesssim C\,\min(\Delta x,\Delta y)/\|u\|_\infty \).
-- **Degenerate weights**: the elliptic \( \nabla\cdot(b\nabla\phi) \) may be **ill-conditioned** near boundaries when \( b\to0 \) — prefer **harmonic averages** for faces and a **multigrid preconditioner** (AMG).
-- **Weighted energy**: without forcing, \( \tfrac12\int b|u|^2 \) should decrease (diffusion) — good consistency test.
+## 2. Inviscid lake equations
+
+The inviscid problem is solved in vorticity formulation:
+
+$$
+\partial_t\omega + u\cdot\nabla\omega = 0.
+$$
+
+The velocity is reconstructed from a stream function \(\psi\) through the singular elliptic problem
+
+$$
+\operatorname{div}\left(\frac1b\nabla\psi\right)=b\omega.
+$$
+
+The velocity is then recovered by
+
+$$
+u=\frac1b\nabla^\perp\psi.
+$$
+
+The convention used throughout the code is
+
+$$
+\nabla^\perp\psi=(-\partial_y\psi,\partial_x\psi),
+$$
+
+and
+
+$$
+\operatorname{curl}u=\partial_xu_y-\partial_yu_x.
+$$
+
+Therefore,
+
+$$
+\omega=\frac{\operatorname{curl}u}{b}.
+$$
+
+The sparse elliptic reconstruction solves the SPD system
+
+$$
+A_{\rm sing}\psi=-b\omega,
+$$
+
+where
+
+$$
+A_{\rm sing}=-\operatorname{div}\left(\frac1b\nabla\right).
+$$
+
+The singular elliptic operator is implemented in `lake/elliptic.py`.
 
 ---
 
-## 4) Minimal Validation
-1. **Weighted divergence**: check \( \|\nabla\cdot(bu^{n+1})\|_{L^2} \) after projection.
-2. **Smooth case with \( b\equiv\text{const} \)**: compare to 2D Navier–Stokes (reduces to classical case).
-3. **Grid/time convergence**: decrease of residuals and error upon refinement.
-4. **Study \( \nu\to0 \)**: measure \( \|u_\nu-u_0\|_{L^2(b)} \) (inviscid reference computed with adapted scheme) as in [AT‑L2023], [JNW2012].
+## 3. Viscous lake equations
+
+The viscous problem is treated in velocity formulation.
+
+The continuous model motivating the prototype is
+
+$$
+\partial_t(bu_\mu)
++\operatorname{div}(bu_\mu\otimes u_\mu)
+-2\mu\operatorname{div}\left(bD(u_\mu)+b\operatorname{div}(u_\mu)I\right)
++b\nabla p_\mu=0,
+$$
+
+with
+
+$$
+\operatorname{div}(bu_\mu)=0.
+$$
+
+The symmetric gradient is
+
+$$
+D(u)=\frac12(\nabla u+\nabla u^T).
+$$
+
+The continuous theory includes Navier-type boundary conditions:
+
+$$
+bu_\mu\cdot n=0,
+$$
+
+and
+
+$$
+2b\left(D(u_\mu)\cdot n+\operatorname{div}(u_\mu)n\right)\cdot\tau
++\eta_\mu b(u_\mu\cdot\tau)=0.
+$$
+
+However, this prototype does **not** impose the full Navier slip-with-friction boundary condition exactly. The boundary is represented by a Cartesian mask, and boundary effects are only approximated and monitored through diagnostics.
+
+The viscous solver is implemented in `lake/viscous.py` as a masked Cartesian predictor-projection prototype.
 
 ---
 
-## 5) References
-- B. Al Taki, *Viscosity effect on the degenerate lake equations*, **Nonlinear Analysis** 148 (2017), 30–60. [doi10.1016/j.na.2016.09.017
-- B. Al Taki & C. Lacave, *Degenerate lake equations: classical solutions and vanishing viscosity limit*, **Nonlinearity** 36 (2023), 653–678. doi:10.1088/1361-6544/aca865
-- Q. Jiu, D. Niu, J. Wu, *Vanishing viscosity limits for the degenerate lake equations with Navier boundary conditions*, **Nonlinearity** 25 (2012), 641–655. [IOP PDF](https://iopscience.iop.org/article/10.1088/0951-7715/25/3/641/pdf)
-- D. Iftimie, F. Sueur, *Viscous boundary layers for Navier–Stokes with Navier slip*, preprint (2010). [PDF](https://math.univ-lyon1.fr/%7Eiftimie/ARTICLES/geominv.pdf)
-- X.-P. Wang, Y.-G. Wang, Z. Xin, *Boundary layers in incompressible Navier–Stokes with Navier boundary conditions*, **Commun. Math. Sci.** 8(4) (2010), 965–998. [PDF](https://intlpress.com/site/pub/files/_fulltext/journals/cms/2010/0008/0004/CMS-2010-0008-0004-a010.pdf)
+## 4. Vanishing-viscosity comparison
+
+The vanishing-viscosity comparison is performed only at the velocity level.
+
+The numerical error is measured in the weighted velocity norm
+
+$$
+\|u_\mu-u\|_{L^2_b}
+=
+\left(
+\int_\Omega b |u_\mu-u|^2\,dx
+\right)^{1/2}.
+$$
+
+On the masked grid this is approximated by
+
+$$
+\|u_\mu-u\|_{L^2_b}
+=
+\left(
+\sum_{\Omega_h} b_{ij}|u_{\mu,ij}-u_{ij}|^2\,dx\,dy
+\right)^{1/2}.
+$$
+
+The prototype does **not** compare viscous and inviscid vorticities.
+
+A formal theoretical reference rate has the form
+
+$$
+O\left(\mu^{(1-\beta)/2}\right),
+$$
+
+under assumptions including a Navier friction scaling
+
+$$
+0\leq\eta_\mu\leq \eta\mu^{-\beta},
+\qquad
+\beta<1.
+$$
+
+In this prototype, the observed numerical error contains several contributions:
+
+- viscosity error;
+- spatial discretization error;
+- time discretization error;
+- elliptic solver error;
+- projection consistency error;
+- boundary-mask geometry error;
+- projection regularization error.
+
+Therefore, the fitted slope in \(\mu\) must be interpreted qualitatively unless all these error sources are controlled.
+
+---
+
+## 5. Project structure
+
+```text
+lake_vanishing_viscosity/
+│
+├── main_notebook.ipynb
+│
+├── lake/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── grid.py
+│   ├── operators.py
+│   ├── elliptic.py
+│   ├── inviscid.py
+│   ├── projection.py
+│   ├── viscous.py
+│   ├── diagnostics.py
+│   └── plotting.py
+│
+├── scripts/
+│   └── run_quick_test.py
+│
+├── README.md
+└── .gitignore
+
+The project was designed to separate clearly:
+
+1. the **inviscid lake equations** in vorticity-stream formulation;
+2. the **viscous lake equations** in velocity formulation;
+3. the **vanishing-viscosity comparison** in the weighted velocity norm \(L^2_b\).
+
+This is a prototype implementation. It is not a boundary-fitted FEM/FVM solver and should not be interpreted as a rigorous numerical verification of the theoretical vanishing-viscosity convergence rate.
+
+---
+
+## 1. Mathematical setting
+
